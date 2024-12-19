@@ -9,9 +9,10 @@ export const protect = async (req, res, next) => {
             token = req.headers.authorization;
 
             // Verify token
-            const verifytoken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+            const verifytoken = jwt.verify(token, process.env.TOKEN_SECRET);
 
             const rootUser = await user.findOne({_id:verifytoken._id});
+            res.status(201).json({status:201,rootUser})
             next();
         } catch (error) {
             res.status(401).json({ message: "Not authorized, token failed" });

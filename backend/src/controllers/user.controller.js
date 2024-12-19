@@ -1,17 +1,19 @@
 import { user } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
-const keysecreat=process.env.ACCESS_TOKEN_SECRET;
+const keysecreat = process.env.TOKEN_SECRET;
+import jwt from "jsonwebtoken";
+
 
 // email config
 
 const transporter = nodemailer.createTransport({
-    service:"gmail",
-    auth:{
-        user:process.env.EMAIL,
-        pass:process.env.PASSWORD
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD
     }
-}) 
+})
 
 
 // **Register User**
@@ -89,31 +91,19 @@ export const loginUser = async (req, res) => {
     }
 };
 
-// **Get User Details**
-export const getUserProfile = async (req, res) => {
-    try {
-        const userProfile = await user.findById(req.user._id).select("-password");
-        if (!userProfile) {
-            return res.status(404).json({ message: "User not found" });
-        }
 
-        res.status(200).json(userProfile);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching profile", error: error.message });
-    }
-};
 
 
 //userlogout
 
-export const userlogout = async (req,res) => {
+export const userlogout = async (req, res) => {
     try {
-      //code to logout user
+        //code to logout user
         req.user.tokens = req.user.tokens.filter((currElement) => {
             return currElement.token !== req.token
         })
         req.user.save();
-        res.status(201).json({message:"user logout successfully"})
+        res.status(201).json({ message: "user logout successfully" })
 
     }
     catch {
@@ -124,77 +114,75 @@ export const userlogout = async (req,res) => {
 };
 
 // send email Link For reset Password
-export const resetpassword=async(req,res)=>{
-    console.log(req.body)
+export const resetpassword = async (req, res) => {
+    console.log(req.body, "reset password")
 
-    const {email} = req.body;
+    const { email } = req.body;
 
-    if(!email){
-        res.status(401).json({status:401,message:"Enter Your Email"})
+    if (!email) {
+        res.status(401).json({ status: 401, message: "Enter Your Email" })
     }
-
+    console.log(email)
     try {
-        const userfind = await user.findOne({email});
+        const userfind = await user.findOne({ email: email });
+        console.log(userfind, "userfind")
 
         // token generate for reset password
-        const token = jwt.sign({_id:userfind._id},keysecreat,{
-            expiresIn:"5m"
+        const token = jwt.sign({ _id: userfind._id }, keysecreat, {
+            expiresIn: "5m"
         });
-        
-        const setusertoken = await user.findByIdAndUpdate({_id:userfind._id},{verifytoken:token},{new:true});
+        console.log(token, "token")
 
-
-        if(setusertoken){
+        const setusertoken = await user.findByIdAndUpdate({ _id: userfind._id }, { verifytoken: token }, { new: true });
+        console.log(setusertoken, "setusertoken")
+        if (setusertoken) {
             const mailOptions = {
-                from:process.env.EMAIL,
-                to:email,
-                subject:"Sending Email For password Reset",
-                text:`This Link Valid For 5 MINUTES http://localhost:5000/forgotpassword/${userfind.id}/${setusertoken.verifytoken}`
+                from: process.env.EMAIL,
+                to: email,
+                subject: "Sending Email For password Reset",
+                text: `This Link Valid For 5 MINUTES http://localhost:3000/forgotpassword/${userfind.id}/${setusertoken.verifytoken}`
             }
 
-            transporter.sendMail(mailOptions,(error,info)=>{
-                if(error){
-                    console.log("error",error);
-                    res.status(401).json({status:401,message:"email not send"})
-                }else{
-                    console.log("Email sent",info.response);
-                    res.status(201).json({status:201,message:"Email sent Succsfully"})
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.log("error", error);
+                    res.status(401).json({ status: 401, message: "email not send" })
+                } else {
+                    console.log("Email sent", info.response);
+                    res.status(201).json({ status: 201, message: "Email sent Succsfully" })
                 }
             })
+            res.status(200).json(setusertoken)
 
         }
-
     } catch (error) {
-        res.status(401).json({status:401,message:"invalid user"})
+        res.status(401).json({ status: 401, message: "invalid user" })
     }
-
 };
-
-
 // verify user for forgot password time
-export const forgotpassword=async(req,res)=>{
-    const {id,token} = req.params;
+export const forgotpassword = async (req, res) => {
+    const { id, token } = req.body;
 
     try {
-        const validuser = await user.findOne({_id:id,verifytoken:token});
-        
-        const verifyToken = jwt.verify(token,keysecreat);
+        console.log(id, token)
+        const validuser = await user.findOne({ _id: id, verifytoken: token });
 
+        const verifyToken = jwt.verify(token, keysecreat);
+        console.log("reached")
         console.log(verifyToken)
+        console.log(validuser)
 
-        if(validuser && verifyToken._id){
-            res.status(201).json({status:201,validuser})
-        }else{
-            res.status(401).json({status:401,message:"user not exist"})
+        if (validuser && verifyToken._id) {
+            res.status(201).json({ status: 201, validuser })
+        } else {
+            res.status(401).json({ status: 401, message: "user not exist" })
         }
 
     } catch (error) {
-        res.status(401).json({status:401,error})
+        res.status(401).json({ status: 401, error, message: "trouble happend" })
     }
 };
 
-
-// change password
 
 export const changepassword=async(req,res)=>{
     const {id,token} = req.params;
@@ -221,3 +209,14 @@ export const changepassword=async(req,res)=>{
         res.status(401).json({status:401,error})
     }
 };
+
+
+
+
+
+
+
+
+
+
+

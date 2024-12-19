@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
-const keysecreat =process.env.TOKEN_SECRET
+const keysecreat = process.env.TOKEN_SECRET
 
 const userSchema = new Schema({
     name: {
@@ -62,11 +62,11 @@ userSchema.methods.generateAccessToken = async function () {
             _id: this._id,
             email: this.email,
             name: this.username,
-        },keysecreat,{
-            expiresIn:"1d"
+        }, keysecreat, {
+            expiresIn: "1d"
         })
         console.log(token)
-return        token
+        return token
     } catch {
         (error) => {
             console.log(error)
@@ -74,4 +74,4 @@ return        token
     }
 }
 
-export const user = mongoose.model('user', userSchema);
+export const user = mongoose.model('users', userSchema);

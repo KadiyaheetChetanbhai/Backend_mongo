@@ -6,7 +6,8 @@ import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
-connectdb().then(() => {
+connectdb()
+.then(() => {
 
     // Middleware
     app.use(express.json());

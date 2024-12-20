@@ -25,7 +25,7 @@ export const registerUser = async (req, res) => {
 
         //to check if all details are filled or not 
         if (!name || !email || !Phone_No || !password || !confirm_password) {
-            console.log("error")
+        //    console.log("error")
             res.status(422)    //unprocessable entity 
         }
 
@@ -57,7 +57,7 @@ export const registerUser = async (req, res) => {
 
 // **Login User**
 export const loginUser = async (req, res) => {
-    console.log(req.body);
+   // console.log(req.body);
 
     try {
         const { email, password } = req.body;
@@ -145,10 +145,10 @@ export const resetpassword = async (req, res) => {
 
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) {
-                    console.log("error", error);
+                   // console.log("error", error);
                     res.status(401).json({ status: 401, message: "email not send" })
                 } else {
-                    console.log("Email sent", info.response);
+                  //  console.log("Email sent", info.response);
                     res.status(201).json({ status: 201, message: "Email sent Succsfully" })
                 }
             })
@@ -161,16 +161,16 @@ export const resetpassword = async (req, res) => {
 };
 // verify user for forgot password time
 export const forgotpassword = async (req, res) => {
-    const { id, token } = req.body;
+    const { id, token } = req.params;
 
     try {
         console.log(id, token)
         const validuser = await user.findOne({ _id: id, verifytoken: token });
 
         const verifyToken = jwt.verify(token, keysecreat);
-        console.log("reached")
-        console.log(verifyToken)
-        console.log(validuser)
+      //  console.log("reached")
+      //  console.log(verifyToken)
+      //  console.log(validuser)
 
         if (validuser && verifyToken._id) {
             res.status(201).json({ status: 201, validuser })
@@ -186,18 +186,25 @@ export const forgotpassword = async (req, res) => {
 
 export const changepassword=async(req,res)=>{
     const {id,token} = req.params;
+    //console.log("id and passwords ",id,token)
+
 
     const {password} = req.body;
+    //console.log("password change",password)
 
     try {
-        const validuser = await userdb.findOne({_id:id,verifytoken:token});
+        const validuser = await user.findOne({_id:id,verifytoken:token});
+        //console.log(validuser)  to check for valid user
         
-        const verifyToken = jwt.verify(token,keysecret);
+        const verifyToken = jwt.verify(token,keysecreat);
+        
+        //console.log(verifyToken)
 
         if(validuser && verifyToken._id){
             const newpassword = await bcrypt.hash(password,12);
+           // console.log("hashed password",newpassword)
 
-            const setnewuserpass = await userdb.findByIdAndUpdate({_id:id},{password:newpassword});
+            const setnewuserpass = await user.findByIdAndUpdate({_id:id},{password:newpassword});
 
             setnewuserpass.save();
             res.status(201).json({status:201,setnewuserpass})

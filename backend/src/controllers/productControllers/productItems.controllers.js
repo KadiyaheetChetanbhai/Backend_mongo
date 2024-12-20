@@ -11,7 +11,7 @@ export const addProduct = async (req, res) => {
     console.log(category)
 
 
-    const { product_name, product_description, product_price, product_quantity, product_image } = req.body;
+    const { product_name, product_description, product_price, product_quantity, product_image } = req.formdata;
 
     if (!product_name || !product_description || !product_price || !product_quantity || !product_image) {
         return res.status(400).json({ message: "All fields are required" })
@@ -48,15 +48,16 @@ export const getProducts = async (req, res) => {
 }
 
 
-export const getallproducts = async (req, res) => { 
+export const getspecifiedproducts = async (req, res) => {
     try {
-        const products = await Product.find();
-        console.log(products)
-        res.status(200).json({ status: 200, products });
+        const product = await
+            Product.findOne({ _id: req.params.id });
+        res.status(200).json({ status: 200, product });
     } catch (error) {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
 
 export const updateProduct = async (req, res) => {
     const { product_name, product_description, product_price, product_quantity, product_image } = req.body;

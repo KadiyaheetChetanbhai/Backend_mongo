@@ -13,10 +13,12 @@ connectdb()
 
     // Middleware
     app.use(express.json());
+    app.use("/uploads",express.static("./useruploads"))
 
     // Routes
     app.use("/api/users", userRoutes);
     app.use("/api/products",productRoutes);
+    
     app.listen(process.env.PORT||5000, () => {
         console.log(`server is ready ${process.env.PORT||5000}`);
     })

@@ -1,4 +1,4 @@
-import { user } from "../models/user.model.js";
+import { user } from "../../models/Users/user.model.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 const keysecreat = process.env.TOKEN_SECRET;
@@ -16,16 +16,17 @@ const transporter = nodemailer.createTransport({
 })
 
 
+
 // **Register User**
 export const registerUser = async (req, res) => {
-    const { name, email, Phone_No, password, confirm_password } = req.body;
+    const { name, email, Phone_No, password, confirm_password, role } = req.body;
 
     try {
 
 
         //to check if all details are filled or not 
         if (!name || !email || !Phone_No || !password || !confirm_password) {
-        //    console.log("error")
+            //    console.log("error")
             res.status(422)    //unprocessable entity 
         }
 
@@ -38,7 +39,7 @@ export const registerUser = async (req, res) => {
             res.status(422).json({ error: "please give same password as confirm password" })
         } else {
             // Create new user
-            const newUser = new user({ name, email, Phone_No, password, confirm_password });
+            const newUser = new user({ name, email, Phone_No, password, confirm_password, role });
             //generate tokens 
             const accessToken = newUser.generateAccessToken();
             const storedata = await newUser.save();
@@ -46,6 +47,7 @@ export const registerUser = async (req, res) => {
                 message: `User registered successfully with details `,
                 user: storedata,
                 accessToken,
+                role: storedata.role
             });
         }
     } catch (error) {
@@ -57,9 +59,11 @@ export const registerUser = async (req, res) => {
 
 // **Login User**
 export const loginUser = async (req, res) => {
-   // console.log(req.body);
+    // console.log(req.body);
 
     try {
+
+
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -85,6 +89,7 @@ export const loginUser = async (req, res) => {
         res.status(200).json({
             message: "Login successful",
             accessToken,
+            role: existingUser.role
         });
     } catch (error) {
         res.status(500).json({ message: "Login failed", error: error.message });
@@ -145,10 +150,10 @@ export const resetpassword = async (req, res) => {
 
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) {
-                   // console.log("error", error);
+                    // console.log("error", error);
                     res.status(401).json({ status: 401, message: "email not send" })
                 } else {
-                  //  console.log("Email sent", info.response);
+                    //  console.log("Email sent", info.response);
                     res.status(201).json({ status: 201, message: "Email sent Succsfully" })
                 }
             })
@@ -168,9 +173,9 @@ export const forgotpassword = async (req, res) => {
         const validuser = await user.findOne({ _id: id, verifytoken: token });
 
         const verifyToken = jwt.verify(token, keysecreat);
-      //  console.log("reached")
-      //  console.log(verifyToken)
-      //  console.log(validuser)
+        //  console.log("reached")
+        //  console.log(verifyToken)
+        //  console.log(validuser)
 
         if (validuser && verifyToken._id) {
             res.status(201).json({ status: 201, validuser })
@@ -184,36 +189,36 @@ export const forgotpassword = async (req, res) => {
 };
 
 
-export const changepassword=async(req,res)=>{
-    const {id,token} = req.params;
+export const changepassword = async (req, res) => {
+    const { id, token } = req.params;
     //console.log("id and passwords ",id,token)
 
 
-    const {password} = req.body;
+    const { password } = req.body;
     //console.log("password change",password)
 
     try {
-        const validuser = await user.findOne({_id:id,verifytoken:token});
+        const validuser = await user.findOne({ _id: id, verifytoken: token });
         //console.log(validuser)  to check for valid user
-        
-        const verifyToken = jwt.verify(token,keysecreat);
-        
+
+        const verifyToken = jwt.verify(token, keysecreat);
+
         //console.log(verifyToken)
 
-        if(validuser && verifyToken._id){
-            const newpassword = await bcrypt.hash(password,12);
-           // console.log("hashed password",newpassword)
+        if (validuser && verifyToken._id) {
+            const newpassword = await bcrypt.hash(password, 12);
+            // console.log("hashed password",newpassword)
 
-            const setnewuserpass = await user.findByIdAndUpdate({_id:id},{password:newpassword});
+            const setnewuserpass = await user.findByIdAndUpdate({ _id: id }, { password: newpassword });
 
             setnewuserpass.save();
-            res.status(201).json({status:201,setnewuserpass})
+            res.status(201).json({ status: 201, setnewuserpass })
 
-        }else{
-            res.status(401).json({status:401,message:"user not exist"})
+        } else {
+            res.status(401).json({ status: 401, message: "user not exist" })
         }
     } catch (error) {
-        res.status(401).json({status:401,error})
+        res.status(401).json({ status: 401, error })
     }
 };
 

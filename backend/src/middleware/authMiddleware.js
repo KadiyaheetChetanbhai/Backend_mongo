@@ -1,20 +1,29 @@
 import jwt from "jsonwebtoken";
-import { user } from "../models/user.model.js"; 
+import { user } from "../models/Users/user.model.js";
 
 export const protect = async (req, res, next) => {
     let token;
-    
     try {
-            // Get token from header
-            token = req.headers.authorization;
+         token = req.headers.authorization;
+         token = token.split(" ")[1];
+        console.log(process.env.TOKEN_SECRET)
+        const verifytoken = jwt.verify(token,process.env.TOKEN_SECRET);
+        
+        const rootUser = await user.findOne({_id:verifytoken._id});
 
-            // Verify token
-            const verifytoken = jwt.verify(token, process.env.TOKEN_SECRET);
+        
+        if(!rootUser) {throw new Error("user not found")}
 
-            const rootUser = await user.findOne({_id:verifytoken._id});
-            res.status(201).json({status:201,rootUser})
-            next();
-        } catch (error) {
-            res.status(401).json({ message: "Not authorized, token failed" });
-        }
+       
+        req.rootUser = rootUser
+        req.userId = rootUser._id
+
+        next();
+
+    }
+    
+     catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "internal server error " });
+    }
 }

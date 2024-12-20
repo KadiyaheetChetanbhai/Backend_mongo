@@ -36,6 +36,12 @@ const userSchema = new Schema({
             required: true
         }
     }],
+    role:{
+        type: String,
+        enum: ["user", "admin"],
+        default: "user"
+        
+    },
     verifytoken: {
         typr: String,
     }
@@ -43,6 +49,8 @@ const userSchema = new Schema({
 },
     { timestamps: true }
 );
+
+
 
 
 //to hash password 
@@ -53,6 +61,8 @@ userSchema.pre("save", async function (next) {
     this.confirm_password = await bcrypt.hash(this.password, 10)
     next()
 })
+
+
 
 
 

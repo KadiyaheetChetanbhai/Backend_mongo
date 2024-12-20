@@ -2,7 +2,7 @@ import { Product } from "../../models/Products/Product.model.js";
 import { user } from "../../models/Users/user.model.js";
 
 export const addProduct = async (req, res) => {
-    
+
     const userid = req.userId;
     const created_by = await user.findOne({ _id: userid });
 
@@ -12,9 +12,9 @@ export const addProduct = async (req, res) => {
 
 
     const { product_name, product_description, product_price, product_quantity, product_image } = req.body;
-   
-    if(!product_name || !product_description || !product_price || !product_quantity || !product_image){
-        return res.status(400).json({message:"All fields are required"})
+
+    if (!product_name || !product_description || !product_price || !product_quantity || !product_image) {
+        return res.status(400).json({ message: "All fields are required" })
     }
 
     try {
@@ -35,6 +35,8 @@ export const addProduct = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
+
 export const getProducts = async (req, res) => {
     try {
         const products = await Product.find();
@@ -44,11 +46,23 @@ export const getProducts = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
+
+export const getallproducts = async (req, res) => { 
+    try {
+        const products = await Product.find();
+        console.log(products)
+        res.status(200).json({ status: 200, products });
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
 export const updateProduct = async (req, res) => {
     const { product_name, product_description, product_price, product_quantity, product_image } = req.body;
 
-    if(!product_name || !product_description || !product_price || !product_quantity || !product_image){
-        return res.status(400).json({message:"All fields are required"})
+    if (!product_name || !product_description || !product_price || !product_quantity || !product_image) {
+        return res.status(400).json({ message: "All fields are required" })
     }
 
     try {
@@ -65,10 +79,12 @@ export const updateProduct = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
+
 export const deleteProduct = async (req, res) => {
 
-    if(!req.params.id){
-        return res.status(400).json({message:"Product id is required"}) 
+    if (!req.params.id) {
+        return res.status(400).json({ message: "Product id is required" })
     }
 
     try {

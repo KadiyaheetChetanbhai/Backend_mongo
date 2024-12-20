@@ -35,6 +35,17 @@ export const getCategories = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const getallCategory = async (req, res) => {
+    try {
+        const categories = await Category.find();
+        res.status(200).json({ status: 200, categories });
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+
 export const updateCategory = async (req, res) => {
     const { category_name, description } = req.body;
 
